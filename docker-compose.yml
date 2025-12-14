@@ -116,6 +116,8 @@ services:
 
       # Endereço anunciado aos clientes para conexão
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
+    volumes:
+      - kafka-1-data:/var/lib/kafka/data
     healthcheck:
       test: ["CMD", "nc", "-vz", "localhost", "29092"]
       interval: 10s
@@ -132,6 +134,8 @@ services:
 
       # Endereço anunciado aos clientes para conexão
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:39092
+    volumes:
+      - kafka-2-data:/var/lib/kafka/data
     healthcheck:
       test: ["CMD", "nc", "-vz", "localhost", "39092"]
       interval: 10s
@@ -148,8 +152,15 @@ services:
 
       # Endereço anunciado aos clientes para conexão
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:49092
+    volumes:
+      - kafka-3-data:/var/lib/kafka/data
     healthcheck:
       test: ["CMD", "nc", "-vz", "localhost", "49092"]
       interval: 10s
       timeout: 10s
       retries: 5
+
+volumes:
+  kafka-1-data:
+  kafka-2-data:
+  kafka-3-data:
