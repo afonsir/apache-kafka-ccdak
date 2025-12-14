@@ -1,0 +1,91 @@
+version: "3.9"
+
+x-kafka-common: &kafka-common
+  image: confluentinc/cp-kafka:7.7.7
+  network_mode: host
+  environment: &kafka-common-env
+    # Identificador único do cluster KRaft
+    # docker run --rm confluentinc/cp-kafka:7.7.7 kafka-storage random-uuid
+    CLUSTER_ID: M_9Wu-kzQCeHTCLgcRabvg
+
+    # Papéis exercidos por este nó (broker + controller)
+    KAFKA_PROCESS_ROLES: broker,controller
+
+    # Nome do listener usado pelo controller
+    KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+    # Mapeamento de listeners para protocolos
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+
+    # Listener interno para quorum de controllers
+    KAFKA_LISTENERS: PLAINTEXT://localhost:0,CONTROLLER://localhost:0
+
+    # Endereços dos nós que participam do quorum RAFT
+    KAFKA_CONTROLLER_QUORUM_VOTERS: |
+      1@localhost:29093,
+      2@localhost:39093,
+      3@localhost:49093
+
+    # Listener usado para comunicação entre brokers
+    KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+    # Diretório onde o Kafka armazena dados e metadata
+    KAFKA_LOG_DIRS: /var/lib/kafka/data
+
+    # Fator de replicação padrão
+    KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+
+    # Número padrão de partições
+    KAFKA_NUM_PARTITIONS: 3
+
+    # Número mínimo de réplicas em sincronia
+    KAFKA_MIN_INSYNC_REPLICAS: 2
+
+services:
+  kafka-1:
+    <<: *kafka-common
+    hostname: kafka-1
+    environment:
+      <<: *kafka-common-env
+      # ID único do nó no cluster (substitui broker.id)
+      KAFKA_NODE_ID: 1
+
+      # Endereço anunciado aos clientes
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "29092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  kafka-2:
+    <<: *kafka-common
+    hostname: kafka-2
+    environment:
+      <<: *kafka-common-env
+      # ID único do nó no cluster (substitui broker.id)
+      KAFKA_NODE_ID: 2
+
+      # Endereço anunciado aos clientes
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:39092
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "39092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  kafka-3:
+    <<: *kafka-common
+    hostname: kafka-3
+    environment:
+      <<: *kafka-common-env
+      # ID único do nó no cluster (substitui broker.id)
+      KAFKA_NODE_ID: 3
+
+      # Endereço anunciado aos clientes
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:49092
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "49092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
