@@ -1,0 +1,155 @@
+version: "3.9"
+
+# =========================
+# ZOOKEEPER (COMMON CONFIG)
+# =========================
+x-zookeeper-common: &zookeeper-common
+  image: confluentinc/cp-zookeeper:7.7.7
+  network_mode: host
+  environment: &zookeeper-common-env
+    # Intervalo (em horas) para limpeza automática de snapshots e logs antigos
+    ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL: 24
+
+    # Quantidade de snapshots a serem mantidos após limpeza
+    ZOOKEEPER_AUTOPURGE_SNAP_RETAIN_COUNT: 3
+
+    # Diretório onde o ZooKeeper armazena snapshots e logs
+    ZOOKEEPER_DATA_DIR: /var/lib/zookeeper/
+
+    # Tempo base (ms) usado para timeouts internos do ZooKeeper
+    ZOOKEEPER_TICK_TIME: 2000
+
+    # Lista de servidores do ensemble (peerPort:leaderElectionPort)
+    ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
+
+# =====================
+# KAFKA (COMMON CONFIG)
+# =====================
+x-kafka-common: &kafka-common
+  image: confluentinc/cp-kafka:7.7.7
+  network_mode: host
+  depends_on:
+    zookeeper-1:
+      condition: service_healthy
+    zookeeper-2:
+      condition: service_healthy
+    zookeeper-3:
+      condition: service_healthy
+  environment: &kafka-common-env
+    # Define o fator de replicação padrão para novos tópicos
+    KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+
+    # Número padrão de partições para novos tópicos
+    KAFKA_NUM_PARTITIONS: 3
+
+    # Número mínimo de réplicas em sincronia para permitir ACK=all
+    KAFKA_MIN_INSYNC_REPLICAS: 2
+
+    # Listener usado para comunicação entre brokers
+    KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+    # Diretório onde o Kafka armazena os logs (dados)
+    KAFKA_LOG_DIRS: /var/lib/kafka/data
+
+    # Tempo de retenção dos logs (em horas)
+    KAFKA_LOG_RETENTION_HOURS: 168
+
+    # Endereços do ensemble ZooKeeper usados pelo Kafka
+    KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
+
+services:
+  zookeeper-1:
+    <<: *zookeeper-common
+    hostname: zoo-1
+    environment:
+      <<: *zookeeper-common-env
+      # ID único do nó no ensemble ZooKeeper
+      ZOOKEEPER_SERVER_ID: 1
+
+      # Porta usada por clientes (Kafka) para conexão
+      ZOOKEEPER_CLIENT_PORT: 22181
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "22181"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  zookeeper-2:
+    <<: *zookeeper-common
+    hostname: zoo-2
+    environment:
+      <<: *zookeeper-common-env
+      # ID único do nó no ensemble ZooKeeper
+      ZOOKEEPER_SERVER_ID: 2
+
+      # Porta usada por clientes (Kafka) para conexão
+      ZOOKEEPER_CLIENT_PORT: 32181
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "32181"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  zookeeper-3:
+    <<: *zookeeper-common
+    hostname: zoo-3
+    environment:
+      <<: *zookeeper-common-env
+      # ID único do nó no ensemble ZooKeeper
+      ZOOKEEPER_SERVER_ID: 3
+
+      # Porta usada por clientes (Kafka) para conexão
+      ZOOKEEPER_CLIENT_PORT: 42181
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "42181"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  kafka-1:
+    <<: *kafka-common
+    hostname: kafka-1
+    environment:
+      <<: *kafka-common-env
+      # ID único do broker Kafka
+      KAFKA_BROKER_ID: 1
+
+      # Endereço anunciado aos clientes para conexão
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "29092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  kafka-2:
+    <<: *kafka-common
+    hostname: kafka-2
+    environment:
+      <<: *kafka-common-env
+      # ID único do broker Kafka
+      KAFKA_BROKER_ID: 2
+
+      # Endereço anunciado aos clientes para conexão
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:39092
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "39092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  kafka-3:
+    <<: *kafka-common
+    hostname: kafka-3
+    environment:
+      <<: *kafka-common-env
+      # ID único do broker Kafka
+      KAFKA_BROKER_ID: 3
+
+      # Endereço anunciado aos clientes para conexão
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:49092
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "49092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
