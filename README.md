@@ -17,6 +17,15 @@ kafka-topics \
   --topic thermostat.readings
 ```
 
+- Describe topic (shows replication info):
+
+```bash
+kafka-topics \
+  --bootstrap-server localhost:19092 \
+  --describe \
+  --topic thermostat.readings
+```
+
 - Create the producer and add some messages:
 
 ```bash
