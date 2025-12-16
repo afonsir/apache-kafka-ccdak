@@ -31,7 +31,7 @@ kafka-topics \
 ```bash
 kafka-console-producer \
   --bootstrap-server localhost:29092 \
-  --topic inventory.purchases
+  --topic thermostat.readings
 ```
 
 ```json
@@ -46,7 +46,7 @@ kafka-console-producer \
 ```bash
 kafka-console-consumer \
   --bootstrap-server localhost:39092 \
-  --topic inventory.purchases \
+  --topic thermostat.readings \
   --from-beginning
 ```
 
@@ -55,18 +55,7 @@ kafka-console-consumer \
 ```bash
 kafka-console-consumer \
   --bootstrap-server localhost:39092 \
-  --topic inventory.purchases \
+  --topic thermostat.readings \
   --from-beginning \
   --property print.key=true
-```
-
-- Create the consumer (parsing message key):
-
-```bash
-kafka-console-consumer \
-  --bootstrap-server localhost:39092 \
-  --topic inventory.purchases \
-  --from-beginning \
-  --property parse.key=true \
-  --property key.separator=:
 ```
