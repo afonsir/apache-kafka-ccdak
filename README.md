@@ -6,6 +6,28 @@
 docker container exec --interactive --tty apache-kafka-ccdak_kafka-1_1 bash
 ```
 
+## Maven
+
+- Check dependencies upgradable:
+
+```bash
+mvn versions:display-dependency-updates
+```
+
+- Compile with Maven:
+
+```bash
+mvn clean compile
+```
+
+- Execute compiled class:
+
+```bash
+mvn exec:java \
+  -Dexec.mainClass="com.github.afonsir.kafka.producers.SimpleProducer" \
+  -DskipTests
+```
+
 ## Create a Producer and a Consumer
 
 - Create the topic _thermostat.readings_:
