@@ -22,6 +22,9 @@ x-zookeeper-common: &zookeeper-common
     # Lista de servidores do ensemble (peerPort:leaderElectionPort)
     ZOOKEEPER_SERVERS: localhost:12888:13888;localhost:22888:23888;localhost:32888:33888
 
+    # Desabilita o admin server
+    ZOOKEEPER_ADMIN_ENABLE_SERVER: "false"
+
 # =====================
 # KAFKA (COMMON CONFIG)
 # =====================
@@ -159,6 +162,13 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+
+  kafka-ui:
+    hostname: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    network_mode: host
+    environment:
+      DYNAMIC_CONFIG_ENABLED: "true"
 
 volumes:
   kafka-1-data:
