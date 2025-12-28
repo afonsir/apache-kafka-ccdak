@@ -1,0 +1,20 @@
+{
+  "namespace": "com.github.afonsir.kafka.avro",
+  "name": "Customer",
+  "type": "record",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "email",
+      "type": ["null", "string"],
+      "default": "null"
+    }
+  ]
+}
