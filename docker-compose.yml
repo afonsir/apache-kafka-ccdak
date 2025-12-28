@@ -60,6 +60,26 @@ x-kafka-common: &kafka-common
     # Endereços do ensemble ZooKeeper usados pelo Kafka
     KAFKA_ZOOKEEPER_CONNECT: localhost:12181,localhost:22181,localhost:32181
 
+# =====================
+# SCHEMA REGISTRY (COMMON CONFIG)
+# =====================
+x-kafka-schema-registry: &kafka-schema-registry
+  image: confluentinc/cp-schema-registry:7.7.7
+  network_mode: host
+  depends_on:
+    kafka-1:
+      condition: service_healthy
+    kafka-2:
+      condition: service_healthy
+    kafka-3:
+      condition: service_healthy
+  environment: &kafka-schema-registry-env
+    # Ativa logs detalhados do Schema Registry
+    SCHEMA_REGISTRY_DEBUG: "true"
+
+    # Lista de brokers Kafka usados pelo Schema Registry
+    SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://localhost:19092,PLAINTEXT://localhost:29092,PLAINTEXT://localhost:39092
+
 services:
   zookeeper-1:
     <<: *zookeeper-common
@@ -159,6 +179,22 @@ services:
       - kafka-3-data:/var/lib/kafka/data
     healthcheck:
       test: ["CMD", "nc", "-vz", "localhost", "39092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  schema-1:
+    <<: *kafka-schema-registry
+    hostname: schema-1
+    environment:
+      <<: *kafka-schema-registry-env
+      # Nome lógico do host usado pelo Schema Registry
+      SCHEMA_REGISTRY_HOST_NAME: schema-1
+
+      # Endereço e porta onde a API HTTP do Schema Registry ficará disponível
+      SCHEMA_REGISTRY_LISTENERS: http://localhost:18081
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "18081"]
       interval: 10s
       timeout: 10s
       retries: 5
