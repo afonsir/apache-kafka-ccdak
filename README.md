@@ -28,6 +28,12 @@ mvn exec:java \
   -DskipTests
 ```
 
+- Gerar classes Avro:
+
+```bash
+mvn clean generate-sources
+```
+
 ## Create a Producer and a Consumer
 
 - Create the topic _thermostat.readings_:
